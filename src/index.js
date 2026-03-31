@@ -5,6 +5,7 @@ const { loadTemplates, renderEmail } = require("./templateEngine");
 const { initTransporter, sendEmail } = require("./mailer");
 const { loadSentEmails, initLog, logSend } = require("./tracker");
 const { delay } = require("./rateLimiter");
+const { ProgressLogger } = require("./progress");
 
 // --------------- CLI argument parsing ---------------
 function parseArgs() {
@@ -116,9 +117,8 @@ async function main() {
     }
   }
 
-  // 6. Send loop
-  let sent = 0;
-  let failed = 0;
+  // 6. Send loop with progress tracking
+  const progress = new ProgressLogger(toSend.length);
   const fromField = `${config.senderName} <${config.emailUser}>`;
 
   for (let i = 0; i < toSend.length; i++) {
@@ -130,7 +130,7 @@ async function main() {
       console.log(`  Subject: ${subject}`);
       console.log(`  Company: ${contact.company} | Person: ${contact.personName}`);
       console.log("");
-      sent++;
+      progress.recordSent();
       continue;
     }
 
@@ -146,32 +146,32 @@ async function main() {
       });
 
       logSend(contact, "sent");
-      sent++;
+      progress.recordSent();
       console.log(
-        `[Sent ${sent}/${toSend.length}] ${contact.email} (${contact.company})`
+        `  ✓ ${contact.email} (${contact.company})`
       );
     } catch (err) {
       logSend(contact, "failed", err.message);
-      failed++;
+      progress.recordFailed();
       console.error(
-        `[FAILED ${sent + failed}/${toSend.length}] ${contact.email}: ${err.message}`
+        `  ✗ ${contact.email}: ${err.message}`
       );
     }
+
+    console.log(progress.getProgressLine());
 
     // Rate limit: wait between sends (skip delay after last email)
     if (i < toSend.length - 1) {
       const waited = await delay();
-      console.log(`  ⏳ Waited ${(waited / 1000).toFixed(1)}s before next send`);
+      console.log(`  Waited ${(waited / 1000).toFixed(1)}s before next send`);
     }
   }
 
   // 7. Summary
-  console.log("\n" + "=".repeat(50));
-  console.log(`  Done! Sent: ${sent} | Failed: ${failed}`);
+  console.log(progress.getSummary());
   if (!opts.dryRun) {
-    console.log("  Check send-log.csv for full details");
+    console.log("  Check send-log.csv for full details\n");
   }
-  console.log("=".repeat(50));
 }
 
 main().catch((err) => {
