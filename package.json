@@ -1,0 +1,29 @@
+{
+  "name": "cold_mailer",
+  "version": "1.0.0",
+  "description": "Cold email outreach tool for internship applications",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dry-run": "node src/index.js --dry-run",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/utk2602/Cold_Mailer.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/utk2602/Cold_Mailer/issues"
+  },
+  "homepage": "https://github.com/utk2602/Cold_Mailer#readme",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "handlebars": "^4.7.9",
+    "nodemailer": "^8.0.4",
+    "xlsx": "^0.18.5"
+  }
+}
