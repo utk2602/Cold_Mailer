@@ -1,5 +1,9 @@
 const XLSX = require("xlsx");
 const path = require("path");
+const fs = require("fs");
+
+// Basic email regex for validation
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
  * Reads the Excel file and returns an array of contact objects.
@@ -10,6 +14,10 @@ const path = require("path");
  */
 function readExcel(filePath) {
   const absolutePath = path.resolve(filePath);
+
+  if (!fs.existsSync(absolutePath)) {
+    throw new Error(`Excel file not found: ${absolutePath}`);
+  }
   const workbook = XLSX.readFile(absolutePath);
   const sheetName = workbook.SheetNames[0];
   const sheet = workbook.Sheets[sheetName];
@@ -75,7 +83,7 @@ function readExcel(filePath) {
     const email = String(row[emailIdx] || "").trim().toLowerCase();
 
     // Skip rows with missing or invalid email
-    if (!email || !email.includes("@")) {
+    if (!email || !EMAIL_REGEX.test(email)) {
       if (row[companyIdx]) skippedNoEmail++;
       continue;
     }

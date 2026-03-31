@@ -23,10 +23,22 @@ function parseArgs() {
         break;
       case "--limit":
         opts.limit = parseInt(args[++i], 10);
+        if (isNaN(opts.limit) || opts.limit < 1) {
+          console.error("[Error] --limit must be a positive integer");
+          process.exit(1);
+        }
         break;
       case "--start-from":
         opts.startFrom = parseInt(args[++i], 10);
+        if (isNaN(opts.startFrom) || opts.startFrom < 1) {
+          console.error("[Error] --start-from must be a positive integer");
+          process.exit(1);
+        }
         break;
+      default:
+        console.error(`[Error] Unknown argument: ${args[i]}`);
+        console.error("Usage: node src/index.js [--dry-run] [--limit N] [--start-from N]");
+        process.exit(1);
     }
   }
 
@@ -62,6 +74,15 @@ function loadConfig() {
 async function main() {
   const opts = parseArgs();
   const config = loadConfig();
+
+  // Validate resume path early
+  if (config.resumePath) {
+    const absResume = require("path").resolve(config.resumePath);
+    if (!require("fs").existsSync(absResume)) {
+      console.warn(`[Warning] Resume file not found: ${absResume}`);
+      console.warn("  Emails will be sent WITHOUT an attachment.\n");
+    }
+  }
 
   console.log("=".repeat(50));
   console.log("  Cold Mailer — Internship Outreach");
