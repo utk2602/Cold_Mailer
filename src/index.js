@@ -7,7 +7,7 @@ const { loadSentEmails, initLog, logSend } = require("./tracker");
 const { delay } = require("./rateLimiter");
 const { ProgressLogger } = require("./progress");
 
-// --------------- CLI argument parsing ---------------
+
 function parseArgs() {
   const args = process.argv.slice(2);
   const opts = {
@@ -45,7 +45,6 @@ function parseArgs() {
   return opts;
 }
 
-// --------------- Config from .env ---------------
 function loadConfig() {
   const required = ["EMAIL_USER", "EMAIL_PASS", "SENDER_NAME", "ROLE"];
   for (const key of required) {
@@ -70,12 +69,11 @@ function loadConfig() {
   };
 }
 
-// --------------- Main ---------------
+
 async function main() {
   const opts = parseArgs();
   const config = loadConfig();
 
-  // Validate resume path early
   if (config.resumePath) {
     const absResume = require("path").resolve(config.resumePath);
     if (!require("fs").existsSync(absResume)) {
@@ -91,20 +89,17 @@ async function main() {
     console.log("*** DRY RUN MODE — no emails will be sent ***\n");
   }
 
-  // 1. Load templates
+
   loadTemplates();
 
-  // 2. Read Excel
+
   const contacts = readExcel(config.excelFile);
 
-  // 3. Load send log to skip already-sent
   initLog();
   const alreadySent = loadSentEmails();
   if (alreadySent.size > 0) {
     console.log(`[Tracker] ${alreadySent.size} emails already sent — will skip`);
   }
-
-  // 4. Filter contacts
   let toSend = contacts.filter((c) => {
     if (alreadySent.has(c.email)) return false;
     if (c.sn < opts.startFrom) return false;
@@ -122,7 +117,6 @@ async function main() {
     return;
   }
 
-  // 5. Initialize SMTP (skip in dry-run)
   if (!opts.dryRun) {
     try {
       await initTransporter({
@@ -137,8 +131,6 @@ async function main() {
       process.exit(1);
     }
   }
-
-  // 6. Send loop with progress tracking
   const progress = new ProgressLogger(toSend.length);
   const fromField = `${config.senderName} <${config.emailUser}>`;
 
@@ -181,14 +173,12 @@ async function main() {
 
     console.log(progress.getProgressLine());
 
-    // Rate limit: wait between sends (skip delay after last email)
     if (i < toSend.length - 1) {
       const waited = await delay();
       console.log(`  Waited ${(waited / 1000).toFixed(1)}s before next send`);
     }
   }
 
-  // 7. Summary
   console.log(progress.getSummary());
   if (!opts.dryRun) {
     console.log("  Check send-log.csv for full details\n");

@@ -51,12 +51,10 @@ async function sendEmail(options, maxRetries = 2) {
     html: options.html,
   };
 
-  // BCC yourself
   if (options.bcc) {
     mailOptions.bcc = options.bcc;
   }
 
-  // Attach resume if path is provided and file exists
   if (options.resumePath) {
     const absPath = path.resolve(options.resumePath);
     if (fs.existsSync(absPath)) {

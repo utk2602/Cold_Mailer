@@ -2,7 +2,6 @@ const XLSX = require("xlsx");
 const path = require("path");
 const fs = require("fs");
 
-// Basic email regex for validation
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 /**
