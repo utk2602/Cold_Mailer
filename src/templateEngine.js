@@ -42,8 +42,9 @@ function renderEmail(contact, config) {
     throw new Error("Templates not loaded. Call loadTemplates() first.");
   }
 
+  const name = (contact.personName || '').trim();
   const data = {
-    personName: contact.personName,
+    personName: name || 'Team',
     company: contact.company,
     senderName: config.senderName,
     role: config.role,

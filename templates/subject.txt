@@ -1,1 +1,1 @@
-Application for {{role}} — {{senderName}} | {{company}}
+Excited to Explore {{role}} Opportunities at {{company}} for Summers
